@@ -4,16 +4,32 @@ const {accountPage} = require('../../selectors/FO/add_account_page');
 const {OrderPage} = require('../../selectors/BO/order');
 const {Menu} = require('../../selectors/BO/menu.js');
 const {ShoppingCart} = require('../../selectors/BO/order');
+const {DiscountSubMenu} = require('../../selectors/BO/catalogpage/discount_submenu');
+const {Addresses} = require('../../selectors/BO/customers/addresses');
 
 const {CreditSlip} = require('../../selectors/BO/order');
 const {ProductList} = require('../../selectors/BO/add_product_page');
 const {AddProductPage} = require('../../selectors/BO/add_product_page');
 const {MerchandiseReturns} = require('../../selectors/BO/Merchandise_returns');
+const {Customer} = require('../../selectors/BO/customers/customer');
+const {BO} = require('../../selectors/BO/customers/index');
 
 let dateFormat = require('dateformat');
 let data = require('../../datas/customer_and_address_data');
 let promise = Promise.resolve();
 global.orderInformation = [];
+
+let customerData = {
+  first_name: 'new',
+  last_name: 'new',
+  email_address: 'new' + global.adminEmail,
+  password: '123456789',
+  birthday: {
+    day: '18',
+    month: '12',
+    year: '1991'
+  }
+};
 
 module.exports = {
   createOrderFO: function (authentication = "connected", login = 'pub@prestashop.com', password = '123456789') {
@@ -132,18 +148,206 @@ module.exports = {
       }, 'common_client');
     }, 'common_client');
   },
-  createOrderBO: function (OrderPage, CreateOrder, productData) {
+
+  createOrderWithCustomerBO: function (OrderPage, CreateOrder, productData_0, productData_1, customer = 'john doe', cartRuleData1) {
     scenario('Create order in the Back Office', client => {
       test('should go to "Orders" page', () => client.goToSubtabMenuPage(Menu.Sell.Orders.orders_menu, Menu.Sell.Orders.orders_submenu));
       test('should click on "Add new order" button', () => client.waitForExistAndClick(CreateOrder.new_order_button, 1000));
-      test('should search for a customer', () => client.waitAndSetValue(CreateOrder.customer_search_input, 'john doe'));
+      test('should click on "Add new customer" button', () => {
+        return promise
+          .then(() => client.waitForExistAndClick(CreateOrder.new_customer_button, 1000))
+          .then(() => client.goToFrame(1));
+      });
+      test('should choose the "Social title" radio', () => client.waitForExistAndClick(Customer.social_title_button, 1000));
+      test('should set the "First name" input', () => client.waitAndSetValue(Customer.first_name_input, customerData.first_name));
+      test('should set the "Last name" input', () => client.waitAndSetValue(Customer.last_name_input, customerData.last_name));
+      test('should set the "Email" input', () => client.waitAndSetValue(Customer.email_address_input, date_time + customerData.email_address));
+      test('should set the "Password" input', () => client.waitAndSetValue(Customer.password_input, customerData.password));
+      test('should set the customer "Birthday"', () => {
+        return promise
+          .then(() => client.waitAndSelectByValue(Customer.days_select, customerData.birthday.day))
+          .then(() => client.waitAndSelectByValue(Customer.month_select, customerData.birthday.month))
+          .then(() => client.waitAndSelectByValue(Customer.years_select, customerData.birthday.year));
+      });
+      test('should activate "Partner offers" option ', () => client.waitForExistAndClick(Customer.Partner_offers));
+      test('should click on "Save" button', () => client.waitForExistAndClick(Customer.save_button));
+      test('should display details of the customer', () => {
+        return promise
+          .then(() => client.waitForExistAndClick(CreateOrder.detail_customer_button, 1000))
+          .then(() => client.pause(1000));
+      });
+      test('should close details of the customer', () => client.waitForExistAndClick(CreateOrder.close_detail, 1000));
+      test('should search for a customer', () => {
+        return promise
+          .then(() => client.waitAndSetValue(CreateOrder.customer_search_input, customer))
+          .then(() => client.pause(1000));
+      });
+      test('should choose the customer', () => client.waitForExistAndClick(CreateOrder.choose_customer_button));
+      test('should display details of the cart', () => {
+        return promise
+          .then(() => client.waitForExistAndClick(CreateOrder.detail_cart, 1000))
+          .then(() => client.goToFrame(1))
+          .then(() => client.pause(3000));
+      });
+      test('should check the "Unit Price"', () => client.checkTextValue(ShoppingCart.product_unit_price.replace('%NUMBER', 1), '€6.00'));
+      test('should check the "Quantity "', () => client.checkTextValue(ShoppingCart.quantity_product.replace('%NUMBER', 1), '4', 'equal'));
+      test('should check the "Stock" of product', () => client.checkTextValue(ShoppingCart.stock_product.replace('%NUMBER', 1), '6'));
+      test('should check the "Total" of product', () => client.checkTextValue(ShoppingCart.total_product.replace('%NUMBER', 1), '€24.00'));
+      test('should check the "Total Cart Summary"', () => client.checkTextValue(ShoppingCart.total_cart_summary.replace('%NUMBER', 1), '€24.00'));
+      test('should close details of the cart', () => {
+        return promise
+          .then(() => client.closeFrame())
+          .then(() => client.waitForExistAndClick(CreateOrder.close_detaill_cart, 1000));
+      });
+      test('should click on "Add to cart" button', () => client.waitForExistAndClick(CreateOrder.use_cart, 1000));
+      test('should click on "Orders"', () => client.waitForExistAndClick(CreateOrder.orders_tab));
+      test('should display details of the orders', () => {
+        return promise
+          .then(() => client.waitForExistAndClick(CreateOrder.detail_orders, 1000))
+          .then(() => client.goToFrame(1))
+          .then(() => client.pause(3000));
+      });
+      test('should check that the customer name is "Test Test"', () => client.checkTextValue(OrderPage.customer_name, 'Test Test', 'contain'));
+      test('should status be equal to "Awaiting bank wire payment"', () => client.checkTextValue(OrderPage.order_status, 'Awaiting check payment'));
+      test('should check the shipping price', () => client.checkTextValue(OrderPage.shipping_cost, global.tab['price'], 'contain'));
+      test('should check the product name', () => client.checkTextValue(OrderPage.product_name.replace("%NUMBER", 1), productData_0['name'], 'contain'));
+      test('should check the order message', () => client.checkTextValue(OrderPage.message_order, 'Order message test'));
+      test('should check the total price', () => client.checkTextValue(OrderPage.total_order_price, global.tab["total_tax"], 'contain'));
+      test('should close details of the order', () => {
+        return promise
+          .then(() => client.closeFrame())
+          .then(() => client.waitForExistAndClick(CreateOrder.close_detail, 1000));
+      });
+      test('should use the orders', () => client.waitForExistAndClick(CreateOrder.use_orders, 1000));
+      test('should click on "remove" icon of the product ', () => client.waitForExistAndClick(CreateOrder.delete_product, 1000));
+      test('should search for a product by name', () => client.waitAndSetValue(CreateOrder.product_search_input, productData_1.name + global.date_time));
+      test('should set the product combination', () => client.waitAndSelectByValue(CreateOrder.product_combination, global.combinationId));
+      test('should set the product "Quantity" input', () => client.waitAndSetValue(CreateOrder.quantity_input.replace('%NUMBER', 1), '4'));
+      test('should click on "Add to cart" button', () => client.scrollWaitForExistAndClick(CreateOrder.add_to_cart_button));
+      test('should click on "Increase" icon of the product', () => client.waitForExistAndClick(CreateOrder.increaseqty_product));
+      test('should click on "Decrease" icon of the product', () => client.waitForExistAndClick(CreateOrder.decreaseqty_product));
+      test('should get the basic product price', () => client.getTextInVar(CreateOrder.basic_price_value, 'basic_price'));
+      test('should get the  price for product', () => {
+        return promise
+          .then(() => client.getTextInVar(CreateOrder.price_product, 'price_product'))
+          .then(() => client.pause(2000));
+      });
+      test('should set the currency 2', () => {
+        return promise
+          .then(() => client.waitAndSelectByValue(CreateOrder.currency, '2'))
+          .then(() => client.pause(2000));
+      });
+      test('should set the currency 1', () => {
+        return promise
+          .then(() => client.waitAndSelectByValue(CreateOrder.currency, '1'))
+          .then(() => client.pause(2000));
+      });
+      test('should set the language "Français" ', () => client.waitAndSelectByValue(CreateOrder.language, '2'));
+      test('should search for a voucher by name', () => {
+        return promise
+          .then(() => client.waitAndSetValue(CreateOrder.voucher, global.tab["code_0001"]))
+          .then(() => client.pause(2000))
+          .then(() => client.keys('ArrowDown'))
+          .then(() => client.waitForExistAndClick(DiscountSubMenu.cartRules.first_result_option,));
+      });
+      test('should click on "Delete"  of the voucher', () => client.waitForExistAndClick(CreateOrder.delete_voucher));
+      test('should click on "Add new voucher" button', () => {
+        return promise
+          .then(() => client.waitForExistAndClick(CreateOrder.new_voucher_button, 1000))
+          .then(() => client.goToFrame(1))
+          .then(() => client.pause(3000));
+      });
+      test('should set the "Name" input', () => client.waitAndSetValue(DiscountSubMenu.cartRules.name_input, cartRuleData1.name));
+      test('should click on "Generate" button', () => {
+        return promise
+          .then(() => client.waitForExistAndClick(DiscountSubMenu.cartRules.generate_button))
+          .then(() => client.getAttributeInVar(DiscountSubMenu.cartRules.code_input, 'value', 'code_0002'));
+      });
+      test('should switch the "Highlight" to "Yes"', () => client.waitForExistAndClick(DiscountSubMenu.cartRules.highlight_button.replace('%S', cartRuleData1.highlight)));
+      test('should switch the "Partial use" to "No"', () => client.waitForExistAndClick(DiscountSubMenu.cartRules.partial_use_button.replace('%S', cartRuleData1.partial_use)));
+      test('should click on "CONDITIONS" tab', () => client.waitForExistAndClick(DiscountSubMenu.cartRules.conditions_tab));
+      test('should set the "Minimum amount" input', () => client.waitAndSetValue(DiscountSubMenu.cartRules.minimum_amount_input, cartRuleData1.minimum_amount));
+      test('should click on "ACTIONS" tab', () => client.waitForExistAndClick(DiscountSubMenu.cartRules.actions_tab));
+      test('should switch the "Free shipping" to "No"', () => client.waitForExistAndClick(DiscountSubMenu.cartRules.free_shipping_button.replace('%S', cartRuleData1.free_shipping)));
+      test('should click on "' + cartRuleData1.type + '" radio', () => client.waitForExistAndClick(DiscountSubMenu.cartRules.apply_discount_radio.replace("%T", cartRuleData1.type), 2000));
+      test('should set the "reduction" ' + cartRuleData1.type + ' value', () => client.waitAndSetValue(DiscountSubMenu.cartRules.reduction_input.replace("%T", cartRuleData1.type), cartRuleData1.reduction, 2000));
+      test('should click on "Save" button', () => client.waitForExistAndClick(DiscountSubMenu.cartRules.save_button));
+      test('should click on "Edit" of delivery adreses', () => {
+        return promise
+          .then(() => client.waitForExistAndClick(CreateOrder.edit_delivery_adress, 2000))
+          .then(() => client.goToFrame(1))
+          .then(() => client.pause(1000));
+      });
+      test('should set the "First Name" ', () => client.waitAndSetValue(Addresses.first_name_input, 'Testttttt', 2000));
+      test('should set the "Last Name" ', () => client.waitAndSetValue(Addresses.last_name_input, 'Testttttt', 2000));
+      test('should set the "Company" ', () => client.waitAndSetValue(Addresses.company, 'Prestaaa', 2000));
+      test('should click on "Save" button', () => client.waitForExistAndClick(Addresses.save_button));
+      test('should check the "Name " for Delivery addresses', () => client.checkTextValue(CreateOrder.detail_adresses, 'Testttttt Testttttt', 'contain', 2000));
+      test('should click on "Add a new address" button', () => {
+        return promise
+          .then(() => client.waitForExistAndClick(CreateOrder.new_address_button, 1000))
+          .then(() => client.goToFrame(1))
+          .then(() => client.pause(3000));
+      });
+      test('should set "Address alias" input', () => client.waitAndSetValue(Addresses.address_alias_input, 'Address xxx ' + global.date_time));
+      test('should set the "First Name" ', () => client.waitAndSetValue(Addresses.first_name_input, 'New', 2000));
+      test('should set the "Last Name" ', () => client.waitAndSetValue(Addresses.last_name_input, 'New', 2000));
+      test('should set "Address" input', () => client.waitAndSetValue(Addresses.address_input, "12 rue test " + date_time));
+      test('should set "Postal code" input', () => client.waitAndSetValue(Addresses.zip_code_input, '75009'));
+      test('should set "City" input', () => client.waitAndSetValue(Addresses.city_input, 'Paris'));
+      test('should set "Pays" input', () => client.waitAndSelectByVisibleText(Addresses.country_input, 'France'));
+      test('should click on "Save" button', () => client.scrollWaitForExistAndClick(Addresses.save_button, 50));
+      test('should set the delivery address ', () => client.waitAndSelectByVisibleText(CreateOrder.delivery_address, 'Address xxx ' + global.date_time));
+      test('should set the invoice address ', () => client.waitAndSelectByVisibleText(CreateOrder.invoice_address, 'Address xxx ' + global.date_time));
+      test('should set the delivery option', () => {
+        return promise
+          .then(() => client.waitAndSelectByValue(CreateOrder.delivery_option, '2,'))
+          .then(() => client.pause(1000));
+      });
+      test('should check the shipping price', () => client.checkTextValue(CreateOrder.shipping_price, '0', 'notequal'));
+      test('should check "Total shipping"', () => client.checkTextValue(CreateOrder.total_shipping, '0', 'notequal'));
+      test('should switch the "Free shipping" to "Yes"', () => {
+        return promise
+          .then(() => client.waitForExistAndClick(CreateOrder.free_shipping_button.replace('%S', '')))
+          .then(() => client.pause(1000));
+      });
+      test('should check the shipping is free', () => client.checkTextValue(CreateOrder.total_shipping, '0', 'equal'));
+      test('should switch the "Free shipping" to "No"', () => {
+        return promise
+          .then(() => client.waitForExistAndClick(CreateOrder.free_shipping_button.replace('%S', '_off')))
+          .then(() => client.pause(2000));
+      });
+      test('should check the shipping have a price ', () => client.checkTextValue(CreateOrder.total_shipping, '0', 'notequal'));
+      test('should add an order message ', () => client.addOrderMessage('Order message test'));
+      test('should check "Total products" ', () => client.checkTextValue(CreateOrder.total_products, global.tab["price_product"]));
+      test('should check "Total vouchers (Tax excl.)" ', () => client.checkTextValue(CreateOrder.total_vouchers, '0', 'notequal'));
+      test('should check "Total shipping (Tax excl.)" ', () => client.checkTextValue(CreateOrder.total_shipping, '0', 'notequal'));
+      test('should check "Total taxes" ', () => client.checkTextValue(CreateOrder.total_taxes, '0', 'notequal'));
+      test('should check "Total (Tax excl.)" ', () => client.checkTextValue(CreateOrder.total_tax_excl, '0', 'notequal'));
+      test('should check "Total (Tax incl.)" ', () => client.checkTextValue(CreateOrder.total_tax_incl, '0', 'notequal'));
+      test('should set the payment type ', () => client.waitAndSelectByValue(CreateOrder.payment, 'ps_checkpayment'));
+      test('should set the order status ', () => client.waitAndSelectByValue(OrderPage.order_state_select, '1'));
+      test('should click on "Create the order" button', () => client.waitForExistAndClick(CreateOrder.create_order_button));
+    }, 'order');
+  },
+  createOrderBO: function (OrderPage, CreateOrder, productData, customer = 'john doe') {
+    scenario('Create order in the Back Office', client => {
+      test('should go to "Orders" page', () => client.goToSubtabMenuPage(Menu.Sell.Orders.orders_menu, Menu.Sell.Orders.orders_submenu));
+      test('should click on "Add new order" button', () => client.waitForExistAndClick(CreateOrder.new_order_button, 1000));
+      test('should search for a customer', () => client.waitAndSetValue(CreateOrder.customer_search_input, customer));
       test('should choose the customer', () => client.waitForExistAndClick(CreateOrder.choose_customer_button));
       test('should search for a product by name', () => client.waitAndSetValue(CreateOrder.product_search_input, productData.name + global.date_time));
       test('should set the product combination', () => client.waitAndSelectByValue(CreateOrder.product_combination, global.combinationId));
       test('should set the product quantity', () => client.waitAndSetValue(CreateOrder.quantity_input.replace('%NUMBER', 1), '4'));
       test('should click on "Add to cart" button', () => client.scrollWaitForExistAndClick(CreateOrder.add_to_cart_button));
       test('should get the basic product price', () => client.getTextInVar(CreateOrder.basic_price_value, global.basic_price));
-      test('should set the delivery option ', () => client.waitAndSelectByValue(CreateOrder.delivery_option, '2,'));
+      test('should set the delivery option ', () => {
+        return promise
+          .then(() => client.waitAndSelectByValue(CreateOrder.delivery_option, '2,'))
+          .then(() => client.pause(1000));
+      });
+      test('should get the  shipping price', () => client.getTextInVar(CreateOrder.shipping_price, 'price'));
+      test('should get the total with taxes', () => client.getTextInVar(CreateOrder.total_with_tax, 'total_tax'));
       test('should add an order message ', () => client.addOrderMessage('Order message test'));
       test('should set the payment type ', () => client.waitAndSelectByValue(CreateOrder.payment, 'ps_checkpayment'));
       test('should set the order status ', () => client.waitAndSelectByValue(OrderPage.order_state_select, '1'));
