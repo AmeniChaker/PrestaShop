@@ -18,6 +18,7 @@ module.exports = {
     edit_button: '//*[@id="form-customer"]//a[@title="Edit"]',
     dropdown_toggle: '//*[@id="form-customer"]//button[@data-toggle="dropdown"]',
     delete_button: '//*[@id="form-customer"]//a[@title="Delete"]',
+    view_button: '//*[@id="form-customer"]//a[@title="View"]',
     delete_first_option: '//*[@id="deleteMode_real"]',
     delete_second_option: '//*[@id="deleteMode_deleted"]',
     delete_confirmation_button: '//*[@id="content"]//input[@value="Delete"]',
@@ -26,6 +27,9 @@ module.exports = {
     bulk_actions_delete_button: '//*[@id="form-customer"]//div[contains(@class,"bulk-actions")]//a[contains(@onclick,"submitBulkdeletecustomer")]',
     empty_list_icon: '//*[@id="table-customer"]//div[contains(@class,"list-empty-msg")]',
     customer_link: '//*[@id="table-address"]//td[contains(text(),"%ID")]',
-    Partner_offers: '//*[@id="fieldset_0"]//label[contains(@for,"optin_on")]'
+    Partner_offers: '//*[@id="fieldset_0"]//label[contains(@for,"optin_on")]',
+    valid_orders: '//*[@id="container-customer"]//div[2]/div[2]/div/div[1]/span',
+    total_amount: '//*[@id="container-customer"]/div[1]/div[1]/div[2]/div[2]/div/div[1]',
+
   }
 };

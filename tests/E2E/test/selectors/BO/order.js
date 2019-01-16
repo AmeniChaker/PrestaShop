@@ -70,8 +70,17 @@ module.exports = {
     delivery_document_name: '//*[@id="documents_table"]//tr[3]//a',
     product_total_price: '//*[@id="total_order"]/td[2]/strong',
     delivery_slip_document: '//*[@id="documents_table"]//a[contains(@href, "DeliverySlip")]',
-    status:'//*[@id="status"]//tr[1]/td[contains(text(),"%STATUS")]'
-
+    status:'//*[@id="status"]//tr[1]/td[contains(text(),"%STATUS")]',
+    customer_email:'//*[@id="content"]//dl/dd[1]/a',
+    customer_created:'//*[@id="content"]//dd[@class="text-muted"]',
+    valid_order_placed:'//*[@id="content"]//dd[3]/span',
+    total_registration:'//*[@id="content"]//dd[4]/span',
+    shipping_address: '//*[@id="addressShipping"]',
+    tab_invoice:'//*[@id="tabAddresses"]/li[2]/a',
+    invoice_address: '//*[@id="addressInvoice"]',
+    date_shipping:'//*[@id="shipping_table"]//tr/td[1]',
+    weight_shipping:'//*[@id="shipping_table"]//tr/td[4]',
+    amount_payment:'//*[@id="formAddPayment"]//tr[1]/td[4]',
   },
 
   CreateOrder: {
