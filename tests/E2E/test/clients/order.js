@@ -37,6 +37,14 @@ class Order extends CommonClient {
       .then(() => this.client.pause(2000));
   }
 
+  getNameInvoice(selector, pause = 0) {
+    return this.client
+      .pause(pause)
+      .then(() => this.client.getText(selector))
+      .then((name) =>global.invoiceFileName = name.replace('#', ''))
+      .then(() => this.client.pause(2000));
+  }
+
   downloadCart(selector) {
     return this.client
       .waitForExistAndClick(selector)
@@ -72,15 +80,6 @@ class Order extends CommonClient {
       .then(() => expect(global.lineFile, "No data").to.be.not.empty)
   }
 
-  checkFile(folderPath, fileName, pause = 0) {
-    fs.stat(folderPath + fileName, function (err, stats) {
-      err === null && stats.isFile() ? global.existingFile = true : global.existingFile = false;
-    });
-    return this.client
-      .pause(pause)
-      .then(() => expect(global.existingFile).to.be.true)
-  }
-
   checkExportedFileInfo(pause = 0) {
     return this.client
       .pause(pause)
@@ -100,7 +99,7 @@ class Order extends CommonClient {
 
   async getCreditSlipDocumentName(selector) {
     let name = await this.client.getText(selector);
-     global.creditSlip = await name.replace('#', '');
+    global.creditSlip = await name.replace('#', '');
   }
 }
 

@@ -16,6 +16,8 @@ module.exports = {
     customer_name: '//*[@id="content"]//div[@class="message-body"]//h4[@class="message-item-heading"]',
     order_submenu: '//*[@id="subtab-AdminOrders"]/a',
     document_submenu: '//*[@id="tabOrder"]//a[@href="#documents"]',
+    view_invoice: '//*[@id="content"]//div[contains(@class, "hidden-print")]/a[contains(@href, "generateInvoicePDF")]',
+    date_invoice: '(//*[@id="documents_table"]//a[contains(@href, "generateInvoicePDF")])[1]',
     download_invoice_button: '(//*[@id="documents_table"]//a[contains(@href, "generateInvoicePDF")])[1]',
     download_delivery_button: '//*[@id="documents_table"]//tr[3]/td[3]/a',
     product_name: '//*[@id="orderProducts"]//tr[%NUMBER]//span[@class="productName"]',

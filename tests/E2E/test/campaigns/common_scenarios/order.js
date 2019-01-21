@@ -4,12 +4,11 @@ const {accountPage} = require('../../selectors/FO/add_account_page');
 const {OrderPage} = require('../../selectors/BO/order');
 const {Menu} = require('../../selectors/BO/menu.js');
 const {ShoppingCart} = require('../../selectors/BO/order');
-
 const {CreditSlip} = require('../../selectors/BO/order');
 const {ProductList} = require('../../selectors/BO/add_product_page');
 const {AddProductPage} = require('../../selectors/BO/add_product_page');
 const {MerchandiseReturns} = require('../../selectors/BO/Merchandise_returns');
-
+const {HomePage} = require('../../selectors/FO/home_page');
 let dateFormat = require('dateformat');
 let data = require('../../datas/customer_and_address_data');
 let promise = Promise.resolve();
@@ -128,6 +127,143 @@ module.exports = {
          * http://forge.prestashop.com/browse/BOOM-3886
          */
         test('should check that the basic price is equal to "22,94 €" (BOOM-3886)', () => client.checkTextValue(CheckoutOrderPage.order_basic_price, global.tab["first_basic_price"]));
+        /**** END ****/
+      }, 'common_client');
+    }, 'common_client');
+  },
+  createOrderNewProductFO: function (authentication = "connected", login = 'pub@prestashop.com', password = '123456789', productData = '') {
+    scenario('Create order in the Front Office', client => {
+      test('should set the language of shop to "English"', () => client.changeLanguage());
+      for (let i = 0; i < productData.length; i++) {
+        test('should search for a product ' + productData[i].name + '', () => {
+          return promise
+            .then(() => client.waitAndSetValue(HomePage.search_input, productData[i].name + date_time))
+            .then(() => client.waitForExistAndClick(HomePage.search_icon, 2000))
+            .then(() => client.waitForExistAndClick(productPage.productLink.replace('%PRODUCTNAME', productData[i].name + date_time)));
+        });
+        test('should select product "size M"', () => client.waitAndSelectByValue(productPage.first_product_size, '2'));
+        test('should set the product "quantity"', () => {
+          return promise
+            .then(() => client.waitAndSetValue(productPage.first_product_quantity, "4"))
+            .then(() => client.getTextInVar(CheckoutOrderPage.product_current_price, "basic_price_" + i));
+        });
+        test('should click on "ADD TO CART" button', () => client.waitForExistAndClick(CheckoutOrderPage.add_to_cart_button));
+        if (productData.length - 1 != i) {
+          test('should click on "CONTINUE SHOPPING" button 1 :', () => client.waitForVisibleAndClick(CheckoutOrderPage.continue_shopping_button));
+        }
+        else {
+          test('should click on "PROCEED TO CHECKOUT" button 1', () => client.waitForVisibleAndClick(CheckoutOrderPage.proceed_to_checkout_modal_button));
+        }
+      }
+      test('should set the quantity to "4" using the keyboard', () => client.waitAndSetValue(CheckoutOrderPage.quantity_input.replace('%NUMBER', 1), '4'));
+      test('should click on "PROCEED TO CHECKOUT" button 2', () => client.waitForExistAndClick(CheckoutOrderPage.proceed_to_checkout_button));
+
+
+      if (authentication === "create_account" || authentication === "guest") {
+        scenario('Create new account', client => {
+          test('should choose a "Social title"', () => client.waitForExistAndClick(accountPage.gender_radio_button));
+          test('should set the "First name" input', () => client.waitAndSetValue(accountPage.firstname_input, data.customer.firstname));
+          test('should set the "Last name" input', () => client.waitAndSetValue(accountPage.lastname_input, data.customer.lastname));
+          if (authentication === "create_account") {
+            test('should set the "Email" input', () => client.waitAndSetValue(accountPage.new_email_input, data.customer.email.replace("%ID", date_time)));
+            test('should set the "Password" input', () => client.waitAndSetValue(accountPage.password_account_input, data.customer.password));
+          } else {
+            test('should set the "Email" input', () => client.waitAndSetValue(accountPage.new_email_input, data.customer.email.replace("%ID", '_guest' + date_time)));
+          }
+          test('should click on "CONTINUE" button', () => client.waitForExistAndClick(accountPage.new_customer_btn));
+        }, 'common_client');
+
+        scenario('Create new address', client => {
+          test('should set the "Address" input', () => client.waitAndSetValue(accountPage.adr_address, data.address.address));
+          test('should set the "Zip/Postal Code" input', () => client.waitAndSetValue(accountPage.adr_postcode, data.address.postalCode));
+          test('should set the "City" input', () => client.waitAndSetValue(accountPage.adr_city, data.address.city));
+          test('should click on "CONTINUE" button', () => client.scrollWaitForExistAndClick(accountPage.new_address_btn));
+        }, 'common_client');
+      }
+
+      if (authentication === "connect") {
+        scenario('Login with existing customer', client => {
+          test('should click on "Sign in"', () => client.waitForExistAndClick(accountPage.sign_tab));
+          test('should set the "Email" input', () => client.waitAndSetValue(accountPage.signin_email_input, login));
+          test('should set the "Password" input', () => client.waitAndSetValue(accountPage.signin_password_input, password));
+          test('should click on "CONTINUE" button', () => client.waitForExistAndClick(accountPage.continue_button));
+        }, 'common_client');
+      }
+
+      if (login !== 'pub@prestashop.com') {
+        scenario('Add new address', client => {
+          test('should set the "company" input', () => client.waitAndSetValue(CheckoutOrderPage.company_input, 'prestashop'));
+          test('should set "VAT number" input', () => client.waitAndSetValue(CheckoutOrderPage.vat_number_input, '0123456789'));
+          test('should set "Address" input', () => client.waitAndSetValue(CheckoutOrderPage.address_input, '12 rue d\'amsterdam'));
+          test('should set "Second address" input', () => client.waitAndSetValue(CheckoutOrderPage.address_second_input, 'RDC'));
+          test('should set "Postal code" input', () => client.waitAndSetValue(CheckoutOrderPage.zip_code_input, '75009'));
+          test('should set "City" input', () => client.waitAndSetValue(CheckoutOrderPage.city_input, 'Paris'));
+          test('should set "Pays" input', () => client.waitAndSelectByVisibleText(CheckoutOrderPage.country_input, 'France'));
+          test('should set "Home phone" input', () => client.waitAndSetValue(CheckoutOrderPage.phone_input, '0123456789'));
+          test('should click on "Use this address" for invoice too', () => client.waitForExistAndClick(CheckoutOrderPage.use_address_for_facturation_input));
+          test('should click on "CONTINUE"', () => client.waitForExistAndClick(accountPage.new_address_btn));
+
+          scenario('Add Invoice Address', client => {
+            test('should set the "company" input', () => client.waitAndSetValue(CheckoutOrderPage.invoice_company_input, 'prestashop'));
+            test('should set "VAT number" input', () => client.waitAndSetValue(CheckoutOrderPage.invoice_vat_number_input, '0123456789'));
+            test('should set "Address" input', () => client.waitAndSetValue(CheckoutOrderPage.invoice_address_input, '12 rue d\'amsterdam'));
+            test('should set "Second address" input', () => client.waitAndSetValue(CheckoutOrderPage.invoice_address_second_input, 'RDC'));
+            test('should set "Postal code" input', () => client.waitAndSetValue(CheckoutOrderPage.invoice_zip_code_input, '75009'));
+            test('should set "City" input', () => client.waitAndSetValue(CheckoutOrderPage.invoice_city_input, 'Paris'));
+            test('should set "Pays" input', () => client.waitAndSelectByVisibleText(CheckoutOrderPage.invoice_country_input, 'France'));
+            test('should set "Home phone" input', () => client.waitAndSetValue(CheckoutOrderPage.invoice_phone_input, '0123456789'));
+            test('should click on "CONTINUE" button', () => client.waitForExistAndClick(accountPage.new_address_btn));
+          }, 'order');
+
+        }, 'common_client');
+      }
+
+      if (authentication === "connected" || authentication === "connect") {
+        if (login === 'pub@prestashop.com') {
+          scenario('Choose the personal and delivery address ', client => {
+            test('should click on confirm address button', () => client.waitForExistAndClick(CheckoutOrderPage.checkout_step2_continue_button));
+          }, 'common_client');
+        }
+      }
+
+      scenario('Choose "SHIPPING METHOD"', client => {
+        test('should choose shipping method my carrier', () => client.waitForExistAndClick(CheckoutOrderPage.shipping_method_option, 2000));
+        test('should create message', () => client.waitAndSetValue(CheckoutOrderPage.message_textarea, 'Order message test', 1000));
+        test('should click on "confirm delivery" button', () => client.waitForExistAndClick(CheckoutOrderPage.checkout_step3_continue_button));
+      }, 'common_client');
+
+      scenario('Choose "PAYMENT" method', client => {
+        test('should set the payment type "Payment by bank wire"', () => client.waitForExistAndClick(CheckoutOrderPage.checkout_step4_payment_radio));
+        test('should set "the condition to approve"', () => client.waitForExistAndClick(CheckoutOrderPage.condition_check_box));
+        test('should click on order with an obligation to pay button', () => client.waitForExistAndClick(CheckoutOrderPage.confirmation_order_button));
+        test('should check the order confirmation', () => {
+          return promise
+            .then(() => client.checkTextValue(CheckoutOrderPage.confirmation_order_message, 'YOUR ORDER IS CONFIRMED', "contain"))
+            .then(() => client.getTextInVar(CheckoutOrderPage.order_total_price, "total_price"))
+            .then(() => client.getTextInVar(CheckoutOrderPage.order_shipping_prince_value, "shipping_price"))
+            .then(() => client.getTextInVar(CheckoutOrderPage.order_total_tax, "total_tax"))
+            .then(() => client.getTextInVar(CheckoutOrderPage.order_total_tax_excl_value, "total_tax_excl"))
+            .then(() => client.getTextInVar(CheckoutOrderPage.order_amount, "total_amount"))
+            .then(() => client.getTextInVar(CheckoutOrderPage.order_reference, "reference", true))
+            .then(() => client.getTextInVar(CheckoutOrderPage.payment_method, "payment_method", true))
+            .then(() => client.getTextInVar(CheckoutOrderPage.shipping_method, "method", true));
+        });
+        for (let i = 0; i < productData.length; i++) {
+          test('should get the product ' + productData[i].name + '  Information', () => {
+            return promise
+              .then(() => client.getTextInVar(CheckoutOrderPage.product_combination.replace('%I', i + 1), "product_combination_" + i))
+              .then(() => client.getTextInVar(CheckoutOrderPage.quantity_product.replace('%I', i + 1), "quantity_product_" + i))
+              .then(() => client.getTextInVar(CheckoutOrderPage.total_product.replace('%I', i + 1), "total_product_" + i))
+          });
+        }
+
+        /**
+         * This scenario is based on the bug described in this ticket
+         * http://forge.prestashop.com/browse/BOOM-3886
+         */
+        for (let i = 0; i < productData.length; i++) {
+          test('should check that the basic price for product ' + productData[i].name + '', () => client.checkTextValue(CheckoutOrderPage.basic_price_product.replace('%I', i + 1), global.tab["basic_price_" + i], 'contain'));
+        }
         /**** END ****/
       }, 'common_client');
     }, 'common_client');

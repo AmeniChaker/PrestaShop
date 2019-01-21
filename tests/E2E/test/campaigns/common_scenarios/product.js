@@ -49,7 +49,7 @@ global.categories = {HOME: {}};
  * };
  */
 module.exports = {
-  createProduct: function (AddProductPage, productData, attributeData = {}) {
+  createProduct: function (AddProductPage, productData, attributeData = {}, taxRule = 'FR Taux standard (20%)') {
     scenario('Create a new product in the Back Office', client => {
       test('should go to "Products" page', () => client.goToSubtabMenuPage(Menu.Sell.Catalog.catalog_menu, Menu.Sell.Catalog.products_submenu));
       test('should click on "New Product" button', () => {
@@ -189,6 +189,14 @@ module.exports = {
             test('should delete the home category', () => client.waitForExistAndClick(AddProductPage.default_category));
           }
         }, 'product/product');
+      }
+
+      if (productData.hasOwnProperty('tax_rule')) {
+        test('should select the "Tax rule" to "' + productData.tax_rule + '"', () => {
+          return promise
+            .then(() => client.scrollWaitForExistAndClick(AddProductPage.tax_rule))
+            .then(() => client.waitForVisibleAndClick(AddProductPage.tax_option.replace('%V', productData.tax_rule)));
+        });
       }
 
       scenario('Save the created product', client => {
