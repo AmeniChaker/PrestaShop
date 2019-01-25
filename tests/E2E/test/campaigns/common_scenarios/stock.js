@@ -18,6 +18,11 @@ module.exports = {
             .then(() => client.pause(1000));
         }
       }
+      promise
+        .then(() => client.isVisible(Stock.product_quantity_modified.replace('%O', orderProduct)))
+        .then(() => client.isVisible(Stock.available_quantity_modified.replace('%O', orderProduct)))
+        .then(() => client.pause(1000));
+
       return promise
         .then(() => client.pause(2000))
         .then(() => client.getTextInVar(Stock.product_quantity.replace('%O', orderProduct), "productQuantity"))
@@ -25,10 +30,39 @@ module.exports = {
     });
     if (saveBtn === 'checkBtn') {
       test('should click on "Check" button', () => client.waitForExistAndClick(Stock.save_product_quantity_button));
+      test('should check the success panel', () => {
+        return promise
+          .then(() => client.waitForVisible(Stock.success_hidden_panel))
+          .then(() => client.checkTextValue(Stock.success_hidden_panel, 'Stock successfully updated', 'contain'));
+      });
+    }
+  },
+  changeStockQuantityWithKeyboard: function (client, Stock, orderProduct, itemNumber, saveBtn/*, option = "add"*/) {
+    test('should change quantity to "-5" using the keyboard', async () => {
+      promise
+      await client.getTextInVar(Stock.product_quantity.replace('%O', orderProduct), "productQuantity");
+      await client.moveToObject(Stock.product_quantity_input.replace('%O', orderProduct));
+      for (let i = 1; i <= itemNumber; i++) {
+        await client.waitForExistAndClick(Stock.product_quantity_input.replace('%O', orderProduct));
+        await client.keys('\uE015');
+        await client.pause(1000);
+      }
+      await client.pause(2000);
+      await client.getTextInVar(Stock.product_quantity.replace('%O', orderProduct), "productQuantity");
+      await client.checkTextValue(Stock.product_quantity_modified.replace('%O', orderProduct), global.tab["productQuantity"].substring(18), "contain");
+    });
+
+    if (saveBtn === 'checkBtn') {
+      test('should click on "Check" button', () => client.waitForExistAndClick(Stock.save_product_quantity_button));
+      test('should check the success panel', () => {
+        return promise
+          .then(() => client.waitForVisible(Stock.success_hidden_panel))
+          .then(() => client.checkTextValue(Stock.success_hidden_panel, 'Stock successfully updated', 'contain'));
+      });
     }
   },
 
-  checkMovementHistory: function (client, Menu, Movement, movementIndex, itemNumber, option, type, reference = "", dateAndTime = "", productName = "") {
+  checkMovementHistory: function (client, Menu, Movement, movementIndex, itemNumber, option, type, reference = "", dateAndTime = "", productName = "", sort = false) {
     test('should go to "Movements" tab', () => {
       return promise
         .then(() => client.goToStockMovements(Menu, Movement))
@@ -44,6 +78,9 @@ module.exports = {
         await client.waitForExistAndClick(Movement.search_button);
         await client.waitForExistAndClick(Movement.advanced_filters_button, 1000);
         await client.waitAndSelectByVisibleText(Movement.movement_type_select, type, 1000);
+        if (sort === true) {
+          await client.waitForExistAndClick(Movement.sort_desc_data_time_icon, 1000);
+        }
       });
     }
     test('should check movement history', async () => {

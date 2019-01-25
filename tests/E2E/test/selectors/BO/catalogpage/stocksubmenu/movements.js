@@ -7,6 +7,7 @@ module.exports = {
     reference_value: '//*[@id="app"]//tr[%P]/td[2]',
     time_movement: '//*[@id="app"]//tr[%P]/td[5]',
     sort_data_time_icon: '//*[@id="app"]//table//th[5]//div[contains(@data-sort-direction,"asc")]',
+    sort_desc_data_time_icon: '//*[@id="app"]//table//th[5]//div[contains(@data-sort-direction,"desc")]',
     employee_value: '//*[@id="app"]//tr[%P]/td[6]',
     product_value: '//*[@id="app"]//tr[%P]/td[1]//p',
     search_input: '//*[@id="search"]//div[contains(@class,"search-input search")]//input',

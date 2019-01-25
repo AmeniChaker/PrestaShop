@@ -255,6 +255,13 @@ class CommonClient {
     }
   }
 
+  checkStockColumn(selector, textToCheckWith) {
+    return this.client
+      .waitForExist(selector, 9000)
+      .then(() => this.client.getText(selector))
+      .then((text) => expect(text.split(' trending_flat ')[0]).to.equal(textToCheckWith));
+  }
+
   checkAttributeValue(selector, attribute, value, parameter = 'equal', pause = 0) {
     switch (parameter) {
       case "contain":
@@ -328,6 +335,7 @@ class CommonClient {
     await pdfUtil.pdfToText(folderPath + fileName + '.pdf', function (err, data) {
       global.indexText = data.indexOf(text);
       global.data = global.data + data;
+      global.indexText = global.data.indexOf(text);
     });
 
     return this.client
@@ -736,14 +744,6 @@ class CommonClient {
           this.client.waitForExistAndClick(AddProductPage.symfony_toolbar)
         }
       })
-  }
-
-  goToFrame(id) {
-    return this.client.frame(id);
-  }
-
-  closeFrame() {
-    return this.client.frameParent();
   }
 }
 
