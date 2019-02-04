@@ -47,6 +47,10 @@ class CommonClient {
       .waitForExist(selector, timeout);
   }
 
+  windowSize(width = 1280, size = 1024) {
+    return this.client.windowHandleSize({width: width, height: size});
+  }
+
   goToSubtabMenuPage(menuSelector, selector) {
     return this.client
       .isOpen(menuSelector)

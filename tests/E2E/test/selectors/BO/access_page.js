@@ -6,6 +6,8 @@ module.exports = {
     menuBO: '//ul[@class="main-menu"]',
     shopname: '//*[@id="header_shopname"]',
     info_employee: '//*[@id="employee_infos"]/a',
-    sign_out: '//*[@id="header_logout"]'
+    sign_out: '//*[@id="header_logout"]',
+    success_alert: '//*[@id="growls-default"]//div[@class="growl-message"]',
+
   }
 };
