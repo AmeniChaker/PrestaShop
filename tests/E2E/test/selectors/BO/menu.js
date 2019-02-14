@@ -25,7 +25,7 @@ module.exports = {
         stocks_submenu: '#subtab-AdminStockManagement',
         stock_tab: '//*[@id="head_tabs"]//a[text()="Stock"]',
         movement_tab: '//*[@id="head_tabs"]//a[text()="Movements"]'
-      },
+       },
       Customers: {
         customers_menu: '//*[@id="subtab-AdminParentCustomer"]/a',
         customers_submenu: '#subtab-AdminCustomers',

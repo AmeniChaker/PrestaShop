@@ -21,6 +21,7 @@ module.exports = {
     identity_link: '//*[@id="identity-link"]',
     create_account_button: '//*[@id="content"]/div[contains(@class,"no-account")]/a',
     page_category: '//*[@id="wrapper"]//a/span[contains(text(),"%CATEGORY")]',
+    product_name_title: '//*[@id="main"]//h1',
     review_page_link: '//*[@id="content"]//a[contains(text(),"%PAGENAME")]',
     not_found_erreur_message: '//*[@id="main"]//h1',
     footer_block: '//*[@id="footer"]//p[contains(text(),"%FOOTERBLOCKNAME")]',

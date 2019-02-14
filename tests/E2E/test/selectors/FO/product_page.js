@@ -36,6 +36,7 @@ module.exports = {
     product_footer_linkwidget: '//*[@id="main"]/div[2]//p[contains(text(),"%DISPLAYFOOTERPRODUCT")]',
     filename_link: '(//*[@id="attachments"]//a)[%N]',
     product_tab_list: '//*[@role="tablist"]//li[%I]',
+    spacific_references: '//*[@id="product-details"]/section/dl/*[text()[contains(., "%F")]]',
     second_product_footer_linkwidget: '//*[@id="main"]/div[2]/div/div[2]/p',
     widget_after_product_thumbs: '//*[@id="content"]//div[contains(@class,"links")]//p[contains(text(),"%NAME")]',
     second_widget_after_product_thumbs: '//*[@id="content"]//div[contains(@class,"links")]//div[2]/p',
@@ -54,6 +55,15 @@ module.exports = {
     product_feature_text: '#product-details > section dt:%B-of-type',
     product_tax_label: '//*[@id="main"]//div[@class="tax-shipping-delivery-label" and (contains(text(),"Tax excluded") or contains(text(),"Tax included") )] ',
     file_description: '//*[@id="attachments"]/section/div/p',
-    pagination_number_link: '//*[@id="js-product-list"]//nav//a[contains(text(), "%NUM")]'
+    product_online_only_flag: '//*[@id="content"]//li[contains(@class, "online-only")]',
+    pagination_number_link: '//*[@id="js-product-list"]//nav//a[contains(text(), "%NUM")]',
+    product_image: '//*[@id="js-product-list"]//img[contains(@src,"%S")]',
+    product_condition: '//*[@id="product-details"]/div[@class="product-condition"]/span',
+    product_customization_message: '#main li:nth-of-type(%I) textarea.product-message',
+    save_customization_button: '//*[@id="main"]//button[@name="submitCustomizedData"]',
+    product_customization_file: '(//*[contains(@class, "file-input")])[%I]',
+    attachment_title: '//*[@id="attachments"]//div[@class="attachment"]//a',
+    attachment_description: '//*[@id="attachments"]//div[@class="attachment"]//p',
+    delete_shopping_cart_item: '//*[@id="main"]//a[@class="remove-from-cart"]'
   }
 };
